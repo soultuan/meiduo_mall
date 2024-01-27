@@ -190,3 +190,8 @@ LOGGING = {
             },
     }
 }
+
+########################################################
+# 通过提供一个值给AUTH_USER_MODEL设置，指向自定义的模型，Django允许覆盖默认的USER的模型：
+# 这个点式路径包括Django应用的名称（必须位于INSTALLED_APPS中），和要用作USER模型的Django模型的名称
+AUTH_USER_MODEL = 'users.User'
