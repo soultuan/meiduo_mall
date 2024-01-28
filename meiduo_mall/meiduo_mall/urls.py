@@ -17,9 +17,10 @@ from django.contrib import admin
 from django.urls import path,include
 
 # 注册转换器
-from utils.converters import UsernameConverter
+from utils.converters import UsernameConverter,UsermobileConverter
 from django.urls import register_converter
 register_converter(UsernameConverter,'username')
+register_converter(UsermobileConverter,'mobile')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
