@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'apps.users',
+    'apps.verifications',
     # CORS
     'corsheaders',
 ]
@@ -145,6 +146,13 @@ CACHES = {
     "session":{ #用于保存session数据
         "BACKEND":"django_redis.cache.RedisCache",
         "LOCATION":"redis://127.0.0.1:6379/1",
+        "OPTIONS":{
+            "CLIENT_CLASS":"django_redis.client.DefaultClient",
+        }
+    },
+    "code":{ #用于保存图片验证码数据
+        "BACKEND":"django_redis.cache.RedisCache",
+        "LOCATION":"redis://127.0.0.1:6379/2",
         "OPTIONS":{
             "CLIENT_CLASS":"django_redis.client.DefaultClient",
         }
