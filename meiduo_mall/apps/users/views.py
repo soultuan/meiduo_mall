@@ -7,7 +7,7 @@ from django.contrib.auth import login
 from django.http import JsonResponse
 from apps.users.models import User
 
-
+from django_redis import get_redis_connection
 
 # Create your views here.
 class UsernameCountView(View):
@@ -45,6 +45,7 @@ class RegisterView(View):
         password = body_dict.get('password')
         password2 = body_dict.get('password2')
         mobile = body_dict.get('mobile')
+        sms_code = body_dict.get('sms_code')
         allow = body_dict.get('allow')
         # 3.验证数据
         #     3.1用户名、密码、确认密码、手机号、是否同意协议都要有# 参数名称与对应的变量
@@ -69,15 +70,25 @@ class RegisterView(View):
         pwd_len = len(password)
         if not pwd_len > 8 and pwd_len <= 20:
             return JsonResponse({'code':400,'errmsg':'密码不满足规则'})
+
         #     3.4确认密码和密码一致
         if not password == password2:
             return JsonResponse({'code':400,'errmsg':'两次密码不一致'})
+
         #     3.5手机号满足规则，手机号不能重复
         if not re.match(r'^1[345789]\d{9}$',mobile):
             return JsonResponse({'code':400,'errmsg':'手机号不满足规则'})
+
+        # 验证短信验证码
+        redis_cli = get_redis_connection('code')
+        redis_sms_code = redis_cli.get(mobile).decode()
+        if not redis_sms_code == sms_code:
+            return JsonResponse({'code':400,'errmsg':'短信验证码错误'})
+
         #     3.6需要同意协议
         if not allow:
             return JsonResponse({'code':400,'errmsg':'用户未同意协议'})
+
         # 4.数据入库
         # User.objects.create(
         #     username = username,

@@ -49,10 +49,15 @@ class SmsCodeView(View):
         # 3.3对比
         if redis_image_code != image_code:
             return JsonResponse({'code':400,'errmsg':'图片验证码错误'})
+
+        if redis_cli.get('send_flag_%s'%mobile) is not None:
+            return JsonResponse({'code':400,'errmsg':'操作过于频繁，请稍后再试'})
         # 4.生成短信验证码
-        sms_code = '%06d' % randint(0,999999)
+        sms_code = '%04d' % randint(0,9999)
         # 5.保存短信验证码
         redis_cli.setex(mobile,300,sms_code)
+        # 添加一个发送标记，有效期是60s，避免频繁发送请求
+        redis_cli.setex('send_flag_%s'%mobile,60,1)
         # 6.发送短信验证码
         ccp = CCP()
         ccp.send_template_sms(mobile,[sms_code, 5],1)
