@@ -3,7 +3,7 @@ import re
 
 from django.shortcuts import render
 from django.views import View
-from django.contrib.auth import login,authenticate
+from django.contrib.auth import login,authenticate,logout
 from django.http import JsonResponse
 from apps.users.models import User
 
@@ -153,4 +153,14 @@ class LoginView(View):
         response = JsonResponse({'code':0,'errmsg':'ok'})
         # 为了首页显示用户信息
         response.set_cookie('username',username)
+        return response
+
+class LogoutView(View):
+    def delete(self,request):
+        logout(request)
+        # 1.删除session信息
+        response = JsonResponse({'code':0,'errmsg':'ok'})
+        # 2.删除cookie信息，因为前端是根据cookie信息来判断用户是否登录
+        response.delete_cookie('username')
+
         return response
