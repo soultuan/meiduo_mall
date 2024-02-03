@@ -5,6 +5,7 @@ from libs.yuntongxun.sms import CCP
 from django_redis import get_redis_connection
 from django.http import HttpResponse,JsonResponse
 from random import randint
+from celery_tasks.sms.tasks import celery_send_sms_code
 
 # Create your views here.
 class ImageCodeView(View):
@@ -54,12 +55,21 @@ class SmsCodeView(View):
             return JsonResponse({'code':400,'errmsg':'操作过于频繁，请稍后再试'})
         # 4.生成短信验证码
         sms_code = '%04d' % randint(0,9999)
-        # 5.保存短信验证码
-        redis_cli.setex(mobile,300,sms_code)
+
+        # 管道pipeline操作redis数据库，提升性能
+        pipeline = redis_cli.pipeline()
+        pipeline.setex(mobile, 300, sms_code)
         # 添加一个发送标记，有效期是60s，避免频繁发送请求
-        redis_cli.setex('send_flag_%s'%mobile,60,1)
+        pipeline.setex('send_flag_%s' % mobile, 60, 1)
+        pipeline.execute()
+        # # 5.保存短信验证码
+        # redis_cli.setex(mobile,300,sms_code)
+        # # 添加一个发送标记，有效期是60s，避免频繁发送请求
+        # redis_cli.setex('send_flag_%s'%mobile,60,1)
         # 6.发送短信验证码
-        ccp = CCP()
-        ccp.send_template_sms(mobile,[sms_code, 5],1)
+        # ccp = CCP()
+        # ccp.send_template_sms(mobile,[sms_code, 5],1)
+        # delay的参数等于任务（函数）的参数
+        celery_send_sms_code.delay(mobile,sms_code)
         # 7.返回响应
         return JsonResponse({'code':0,'errmsg':'ok'})

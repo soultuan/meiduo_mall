@@ -3,7 +3,7 @@ import re
 
 from django.shortcuts import render
 from django.views import View
-from django.contrib.auth import login
+from django.contrib.auth import login,authenticate
 from django.http import JsonResponse
 from apps.users.models import User
 
@@ -108,4 +108,46 @@ class RegisterView(View):
         # user已经登录的用户信息
         login(request,user)
         # 5.返回响应
+        return JsonResponse({'code':0,'errmsg':'ok'})
+
+class LoginView(View):
+
+    def post(self,request):
+        # 1.接收数据
+        data = json.loads(request.body.decode())
+        username = data.get('username')
+        password = data.get('password')
+        remembered = data.get('remembered')
+
+        # 2.验证数据
+        if not all([username,password]):
+            return JsonResponse({'code':400,'errmsg':'参数不全'})
+
+        # 确定我们是根据手机号还是用户名查询
+        # USERNAME_FIELD 我们可以根据修改User.USERNAME_FIELD字段
+        # 来影响authenticate的查询
+        # authenticate就是根据USERNAME_FIELD来查询
+        if re.match(r'1[345789]\d{9}',username):
+            User.USERNAME_FIELD = 'mobile'
+        else:
+            User.USERNAME_FIELD = 'username'
+
+        # 3.验证用户名和密码是否正确
+        # 3.1查询数据库来验证
+        # 3.2使用django的authenticate传递用户名和密码
+        user = authenticate(username=username,password=password)
+        # 如果用户名和密码正确，则返回User信息，
+        # 如果用户名和密码不正确，则返回None
+        if user is None:
+            return JsonResponse({'code':400,'errmsg':'用户名或密码错误'})
+        # 4.session
+        login(request,user)
+        # 5.判断是否记住登录
+        if remembered:
+            # 记住登录，默认两周
+            request.session.set_expiry(None)
+        else:
+            # 不记住登录，浏览器关闭session过期
+            request.session.set_expiry(0)
+        # 6.返回响应
         return JsonResponse({'code':0,'errmsg':'ok'})
