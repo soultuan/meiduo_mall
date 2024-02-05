@@ -40,11 +40,17 @@ class QQLoginURLView(View):
 class OAuthQQView(View):
 
     def get(self,request):
+        # 1.获取code
         code = request.GET.get('code')
+        # 2.通过code换取token
         qq = OAuthQQ(client_id=QQ_CLIENT_ID,
                      client_secret=QQ_CLIENT_SECRET,
                      redirect_uri=QQ_REDIRECT_URI,
                      state='None')
         token = qq.get_access_token(code)
+        # 3.通过token换取openid
         openid = qq.get_open_id(token)
+        # 4.根据openid进行判断
+        # 5.没有绑定过,则需要绑定
+        # 6.如果绑定过,则直接登录
         pass
