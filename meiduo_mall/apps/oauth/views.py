@@ -36,3 +36,15 @@ class QQLoginURLView(View):
         qq_login_url = qq.get_qq_url()
         # 3.返回响应
         return JsonResponse({'code':0,'errmsg':'ok','login_url':qq_login_url})
+
+class OAuthQQView(View):
+
+    def get(self,request):
+        code = request.GET.get('code')
+        qq = OAuthQQ(client_id=QQ_CLIENT_ID,
+                     client_secret=QQ_CLIENT_SECRET,
+                     redirect_uri=QQ_REDIRECT_URI,
+                     state='None')
+        token = qq.get_access_token(code)
+        openid = qq.get_open_id(token)
+        pass
