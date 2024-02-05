@@ -6,6 +6,7 @@ from django.views import View
 from django.contrib.auth import login,authenticate,logout
 from django.http import JsonResponse
 from apps.users.models import User
+from utils.views import LoginRequiredJSONMixin
 
 from django_redis import get_redis_connection
 
@@ -164,3 +165,10 @@ class LogoutView(View):
         response.delete_cookie('username')
 
         return response
+
+# 用户中心，也必须是登录用户
+# LoginRequiredMixin未登录的用户会返回重定向，重定向不是JSON数据
+# 我们希望返回JSON数据，因为前后端用JSON进行交互
+class CenterView(LoginRequiredJSONMixin,View):
+    def get(self,request):
+        return JsonResponse({'code':0,'errmsg':'ok'})
