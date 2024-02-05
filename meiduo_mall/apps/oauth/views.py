@@ -3,6 +3,8 @@ from django.views import View
 from QQLoginTool.QQtool import OAuthQQ
 from meiduo_mall.settings import QQ_CLIENT_ID,QQ_CLIENT_SECRET,QQ_REDIRECT_URI
 from django.http import JsonResponse
+from apps.oauth.models import OAuthQQUser
+from django.contrib.auth import login
 # Create your views here.
 # 1.准备工作
 #     QQ登录参数
@@ -51,6 +53,18 @@ class OAuthQQView(View):
         # 3.通过token换取openid
         openid = qq.get_open_id(token)
         # 4.根据openid进行判断
-        # 5.没有绑定过,则需要绑定
-        # 6.如果绑定过,则直接登录
+        try:
+            qquser = OAuthQQUser.objects.get(openid=openid)
+        except OAuthQQUser.DoesNotExist:
+            # 5.没有绑定过,则需要绑定
+            response = JsonResponse({'code':400,'access_token':openid})
+            return response
+        else:
+            # 6.如果绑定过,则直接登录
+            # 6.1设置session
+            login(request,qquser.user)
+            # 6.2设置cookie
+            response = JsonResponse({'code':0,'errmsg':'ok'})
+            response.set_cookie('username',qquser.user.username)
+            return response
         pass
