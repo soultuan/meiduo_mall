@@ -7,6 +7,7 @@ from apps.oauth.models import OAuthQQUser
 from django.contrib.auth import login
 from django_redis import get_redis_connection
 from apps.users.models import User
+from apps.oauth.utils import generic_openid,check_access_token
 
 import json,re
 # Create your views here.
@@ -61,7 +62,9 @@ class OAuthQQView(View):
             qquser = OAuthQQUser.objects.get(openid=openid)
         except OAuthQQUser.DoesNotExist:
             # 5.没有绑定过,则需要绑定
-            response = JsonResponse({'code':400,'access_token':openid})
+            # 加密openid
+            access_token = generic_openid(openid)
+            response = JsonResponse({'code':400,'access_token':access_token})
             return response
         else:
             # 6.如果绑定过,则直接登录
@@ -78,6 +81,12 @@ class OAuthQQView(View):
         mobile = data.get('mobile')
         sms_code = data.get('sms_code')
         openid = data.get('access_token')
+
+        # 添加对access_token解密
+        openid = check_access_token(openid)
+        if openid is None:
+            return JsonResponse({'code':400,'message':'参数缺失'})
+
         # 2.验证数据
         # if not all([password,mobile,sms_code,openid]):
         #     return JsonResponse({'code': 400, 'message': '参数不全'})
