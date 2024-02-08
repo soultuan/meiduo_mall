@@ -178,3 +178,21 @@ class CenterView(LoginRequiredJSONMixin,View):
             'email_active' :  request.user.email_active
         }
         return JsonResponse({'code':0,'errmsg':'ok','info_data':info_data})
+
+class EmailView(View):
+    def put(self,request):
+        # 1.接收请求
+        # put、post————>body
+        data = json.loads(request.body.decode())
+        # 2.获取数据
+        email = data.get('email')
+        if not re.match(r'^[a-z0-9][\w\.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$',email):
+            return JsonResponse({'code':400,'errmsg':'邮件格式不正确'})
+        # 3.保存邮箱地址
+        user = request.user
+        # user/request.user就是登录用户的实例对象
+        user.email = email
+        user.save()
+        # 4.发送一封激活邮件
+        # 5.返回响应
+        return JsonResponse({'code':0,'errmsg':'ok'})
