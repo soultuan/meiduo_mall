@@ -179,7 +179,7 @@ class CenterView(LoginRequiredJSONMixin,View):
         }
         return JsonResponse({'code':0,'errmsg':'ok','info_data':info_data})
 
-class EmailView(View):
+class EmailView(LoginRequiredJSONMixin,View):
     def put(self,request):
         # 1.接收请求
         # put、post————>body
