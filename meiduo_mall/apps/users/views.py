@@ -171,4 +171,10 @@ class LogoutView(View):
 # 我们希望返回JSON数据，因为前后端用JSON进行交互
 class CenterView(LoginRequiredJSONMixin,View):
     def get(self,request):
-        return JsonResponse({'code':0,'errmsg':'ok'})
+        info_data = {
+            'username' : request.user.username,
+            'mobile' : request.user.mobile,
+            'email' : request.user.email,
+            'email_active' :  request.user.email_active
+        }
+        return JsonResponse({'code':0,'errmsg':'ok','info_data':info_data})
