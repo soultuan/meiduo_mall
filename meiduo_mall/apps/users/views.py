@@ -10,6 +10,7 @@ from utils.views import LoginRequiredJSONMixin
 
 from django_redis import get_redis_connection
 from django.core.mail import send_mail
+from apps.users.utils import generic_email_verify_token
 
 # Create your views here.
 class UsernameCountView(View):
@@ -203,8 +204,12 @@ class EmailView(LoginRequiredJSONMixin,View):
         from_email = '17807890713@163.com'
         # recipient_list
         recipient_list = ['763302385@qq.com']
+        # 4.1对a标签的连接数据进行加密处理
+        # 用user_id来认证邮箱
+        token = generic_email_verify_token(request.user.id)
+        # 组织我们的激活邮件
         # html_message
-        html_message = "点击激活按钮激活邮件<a href='http://www.baidu.com'>点击</a>"
+        html_message = f"点击激活按钮激活邮件<a href='http://www.baidu.com/?token={token}'>点击</a>"
         send_mail(subject=subject,
                   message=message,
                   from_email=from_email,
