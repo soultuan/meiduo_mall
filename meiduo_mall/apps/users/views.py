@@ -202,7 +202,7 @@ class EmailView(LoginRequiredJSONMixin,View):
         # from_email
         from_email = '17807890713@163.com'
         # recipient_list
-        recipient_list = ['763302385@qq.com','17807890713@163.com']
+        recipient_list = ['763302385@qq.com']
         # html_message
         html_message = "点击激活按钮激活邮件<a href='http://www.baidu.com'>点击</a>"
         send_mail(subject=subject,
