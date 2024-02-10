@@ -11,6 +11,7 @@ from utils.views import LoginRequiredJSONMixin
 from django_redis import get_redis_connection
 from django.core.mail import send_mail
 from apps.users.utils import generic_email_verify_token
+from celery_tasks.email.tasks import celery_send_mail
 
 # Create your views here.
 class UsernameCountView(View):
@@ -197,7 +198,7 @@ class EmailView(LoginRequiredJSONMixin,View):
         user.save()
         # 4.发送一封激活邮件
         # subject
-        subject = '美多商城激活邮件'
+        subject = '美多商城邮箱验证'
         # message
         message = ""
         # from_email
@@ -207,14 +208,26 @@ class EmailView(LoginRequiredJSONMixin,View):
         # 4.1对a标签的连接数据进行加密处理
         # 用user_id来认证邮箱
         token = generic_email_verify_token(request.user.id)
+        verify_url = f"http://www.meiduo.site:8080/success_verify_email.html?token={token}"
         # 组织我们的激活邮件
         # html_message
-        html_message = f"点击激活按钮激活邮件<a href='http://www.baidu.com/?token={token}'>点击</a>"
-        send_mail(subject=subject,
-                  message=message,
-                  from_email=from_email,
-                  recipient_list=recipient_list,
-                  html_message=html_message
-                  )
+        html_message = '<p>尊敬的用户您好！</p>'\
+                        '<p>感谢您使用美多商城。</p>'\
+                        f'<p>您的邮箱为:{email}</p>'\
+                        f'<p><a href="{verify_url}">{verify_url}<a></p>'
+
+        celery_send_mail.delay(
+            subject=subject,
+            message=message,
+            from_email=from_email,
+            recipient_list=recipient_list,
+            html_message=html_message
+            )
+        # send_mail(subject=subject,
+        #           message=message,
+        #           from_email=from_email,
+        #           recipient_list=recipient_list,
+        #           html_message=html_message
+        #           )
         # 5.返回响应
         return JsonResponse({'code':0,'errmsg':'ok'})
