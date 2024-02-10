@@ -10,7 +10,7 @@ from utils.views import LoginRequiredJSONMixin
 
 from django_redis import get_redis_connection
 from django.core.mail import send_mail
-from apps.users.utils import generic_email_verify_token
+from apps.users.utils import generic_email_verify_token,check_email_verify_token
 from celery_tasks.email.tasks import celery_send_mail
 
 # Create your views here.
@@ -230,4 +230,25 @@ class EmailView(LoginRequiredJSONMixin,View):
         #           html_message=html_message
         #           )
         # 5.返回响应
+        return JsonResponse({'code':0,'errmsg':'ok'})
+
+class EmailVerifyView(View):
+    def put(self,request):
+        # 1.接收参数
+        params = request.GET
+        # 2.获取参数
+        token = params.get('token')
+        # 3.验证参数
+        if token is None:
+            return JsonResponse({'code':400,'errmsg':'参数缺失'})
+        # 4.获取user_id
+        user_id = check_email_verify_token(token)
+        if user_id is None:
+            return JsonResponse({'code':400,'errmsg':'参数错误'})
+        # 5.根据用户id查询数据
+        user = User.objects.get(id=user_id)
+        # 6.修改数据
+        user.email_active = True
+        user.save()
+        # 7.返回响应
         return JsonResponse({'code':0,'errmsg':'ok'})
