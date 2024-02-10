@@ -9,6 +9,7 @@ from apps.users.models import User
 from utils.views import LoginRequiredJSONMixin
 
 from django_redis import get_redis_connection
+from django.core.mail import send_mail
 
 # Create your views here.
 class UsernameCountView(View):
@@ -194,5 +195,21 @@ class EmailView(LoginRequiredJSONMixin,View):
         user.email = email
         user.save()
         # 4.发送一封激活邮件
+        # subject
+        subject = '美多商城激活邮件'
+        # message
+        message = ""
+        # from_email
+        from_email = '17807890713@163.com'
+        # recipient_list
+        recipient_list = ['763302385@qq.com','17807890713@163.com']
+        # html_message
+        html_message = "点击激活按钮激活邮件<a href='http://www.baidu.com'>点击</a>"
+        send_mail(subject=subject,
+                  message=message,
+                  from_email=from_email,
+                  recipient_list=recipient_list,
+                  html_message=html_message
+                  )
         # 5.返回响应
         return JsonResponse({'code':0,'errmsg':'ok'})

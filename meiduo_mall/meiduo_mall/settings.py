@@ -225,3 +225,16 @@ QQ_CLIENT_ID = '101474184'#------appid
 QQ_CLIENT_SECRET = 'c6ce949e04e12ecc909ae6a8b09b637c'#-------appkey
 # 我们申请时添加的：登陆成功后回调的路径
 QQ_REDIRECT_URI = 'http://www.meiduo.site:8080/oauth_callback.html'
+
+#####################发送邮件相关#######################
+# 当django的哪个类来发送邮件
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# 邮件服务器的主机和端口号
+EMAIL_HOST = 'smtp.163.com'
+EMAIL_POST = 25
+# 使用本人的163服务器和授权码
+# 发送邮件的邮箱
+EMAIL_HOST_USER = '17807890713@163.com'
+EMAIL_HOST_PASSWORD = 'BQQPJSDAMWKAPYEG'
+# 收件人看到的发件人
+# EMAIL_FROM = '美多商城<17807890713@163.com>'
