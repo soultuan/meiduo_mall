@@ -17,3 +17,18 @@ class AreaView(View):
             })
         # 3.返回响应
         return JsonResponse({'code':0,'errmsg':'ok','province_list':province_list})
+
+class SubAreaView(View):
+    def get(self,request,id):
+        # 1.获取省份id，市id，查询信息
+        up_level = Area.objects.get(id=id)
+        down_level = up_level.subs.all()
+        # 2.将对象转换成字典数据
+        subs = []
+        for item in down_level:
+            subs.append({
+                'id':item.id,
+                'name':item.name
+            })
+        # 3.返回响应
+        return JsonResponse({'code':0,'errmsg':'ok','sub_data':{'subs':subs}})
