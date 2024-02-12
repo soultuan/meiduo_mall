@@ -138,7 +138,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ###########################django-redis################################
 CACHES = {
-    "default":{ #预留
+    "default":{ #预留,省市区数据
         "BACKEND":"django_redis.cache.RedisCache",
         "LOCATION":"redis://127.0.0.1:6379/0",
         "OPTIONS":{
