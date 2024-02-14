@@ -295,3 +295,92 @@ class AddressCreateView(LoginRequiredJSONMixin,View):
         }
         # 4.返回响应
         return JsonResponse({'code':0,'errmsg':'ok','address':address})
+
+class AddressView(LoginRequiredJSONMixin,View):
+    def get(self,request):
+        user = request.user
+        address_queryset = Address.objects.filter(user=user,is_deleted=False)
+        addresses = []
+        for address in address_queryset:
+            addresses.append({
+                'id':address.id,
+                'title':address.title,
+                'receiver':address.receiver,
+                'province':address.province.name,
+                'city':address.city.name,
+                'district':address.district.name,
+                'place':address.place,
+                'mobile':address.mobile,
+                'tel':address.tel,
+                'email':address.email
+            })
+        return JsonResponse({'code': 0, 'errmsg': 'ok', 'addresses': addresses})
+
+    def delete(self,request,id):
+        user = request.user
+        Address.objects.filter(user=user,id=id).update(is_deleted=True)
+        # address.delete()
+        # address.is_deleted = True
+        # address.save()
+        return JsonResponse({'code': 0, 'errmsg': 'ok'})
+
+    def put(self,request,id):
+        data = json.loads(request.body.decode())
+        receiver = data.get('receiver')
+        province_id = data.get('province_id')
+        city_id = data.get('city_id')
+        district_id = data.get('district_id')
+        place = data.get('place')
+        mobile = data.get('mobile')
+        tel = data.get('tel')
+        email = data.get('email')
+        user = request.user
+
+        # 在put方法中，调用了update方法来更新数据，但是这个方法返回的是一个queryset，
+        # 而不是单个对象。所以在构建响应数据时，需要获取单个对象而不是直接使用queryset。
+        Address.objects.filter(user=user,id=id).update(
+            user=user,
+            # title=receiver,
+            receiver=receiver,
+            province_id=province_id,
+            city_id=city_id,
+            district_id=district_id,
+            place=place,
+            mobile=mobile,
+            tel=tel,
+            email=email
+        )
+
+        update_address = Address.objects.get(user=user,id=id)
+
+        address = {
+            'id': update_address.id,
+            'title': update_address.title,
+            'receiver': update_address.receiver,
+            'province': update_address.province.name,
+            'city': update_address.city.name,
+            'district': update_address.district.name,
+            'place': update_address.place,
+            'mobile': update_address.mobile,
+            'tel': update_address.tel,
+            'email': update_address.email
+        }
+
+        return JsonResponse({'code': 0, 'errmsg': 'ok', 'address': address})
+
+class AddressDefaultView(LoginRequiredJSONMixin,View):
+    def put(self,request,id):
+        user = request.user
+        # user = User.objects.get(id=user.id)
+        # user.default_address_id = id
+        # user.save()
+        User.objects.filter(id=user.id).update(default_address=id)
+        return JsonResponse({'code': 0, 'errmsg': 'ok'})
+
+class AddressTitleView(LoginRequiredJSONMixin,View):
+    def put(self,request,id):
+        data = json.loads(request.body.decode())
+        title = data.get('title')
+        user = request.user
+        Address.objects.filter(user=user,id=id).update(title=title)
+        return JsonResponse({'code': 0, 'errmsg': 'ok'})
