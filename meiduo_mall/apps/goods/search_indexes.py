@@ -1,6 +1,7 @@
 from apps.goods.models import SKU
 from haystack import indexes
 
+
 """
 0.在模型对应的子应用中创建search——indexes.py文件，以方便haystack检索数据
 1.索引类必须继承indexes.SearchIndex,indexes.Indexable

@@ -7,6 +7,7 @@ from apps.contents.models import ContentCategory
 from apps.goods.models import GoodsCategory,SKU
 from django.http import JsonResponse
 from django.core.paginator import Paginator
+from haystack.views import SearchView
 #
 # # MinIO 服务的基本连接信息
 # minio_client = Minio(
@@ -105,3 +106,24 @@ class ListHotView(View):
             count += 1
 
         return JsonResponse({'code':0,'errmsg':'ok','hot_skus':skus_list})
+
+
+# 我们借助haystack来对接es，所以haystack可以帮助查询数据
+# haystack.views的searchView中的create_response能返回响应，但是返回的不是json数据，所以需要重写这个方法
+class SKUSearchView(SearchView):
+    def create_response(self):
+        # 获取搜索结果
+        context = self.get_context()
+        # 通过添加端点来分析context中的数据格式
+        sku_list = []
+        for sku in context['page'].object_list:
+            sku_list.append({
+                'id':sku.object.id,
+                'name':sku.object.name,
+                'price':sku.object.price,
+                'default_image_url':sku.object.default_image.url,
+                'searchkey':context.get('query'),
+                'page_size':context['page'].paginator.num_pages,
+                'count':context['page'].paginator.count
+            })
+        return JsonResponse(sku_list,safe=False)
