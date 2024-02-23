@@ -2,7 +2,7 @@ from django.shortcuts import render
 from minio import Minio
 from minio.error import S3Error
 from django.views import View
-from utils.goods import get_categories,get_breadcrumb
+from utils.goods import get_categories,get_breadcrumb,get_goods_specs
 from apps.contents.models import ContentCategory
 from apps.goods.models import GoodsCategory,SKU
 from django.http import JsonResponse
@@ -127,3 +127,24 @@ class SKUSearchView(SearchView):
                 'count':context['page'].paginator.count
             })
         return JsonResponse(sku_list,safe=False)
+
+class DetailView(View):
+    def get(self,request,sku_id):
+        try:
+            sku = SKU.objects.get(id=sku_id)
+        except SKU.DoesNotExist:
+            pass
+        # 1.分类数据
+        categories = get_categories()
+        # 2.面包屑
+        breadcrumb = get_breadcrumb(sku.category)
+        # 3.SKU信息
+        # 4.规格信息
+        goods_specs = get_goods_specs(sku)
+        context = {
+            'categories':categories,
+            'breadcrumb':breadcrumb,
+            'sku':sku,
+            'specs':goods_specs,
+        }
+        return render(request,'detail.html',context)
