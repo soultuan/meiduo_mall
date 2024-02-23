@@ -1,5 +1,6 @@
 import os
 from celery import Celery
+from celery.schedules import crontab
 
 # 1.为celery的运行，配置django环境
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'meiduo_mall.settings')
@@ -18,4 +19,4 @@ app.autodiscover_tasks(['celery_tasks.sms','celery_tasks.email'])
 
 # 启动消费者worker终端指令
 # windows系统必须用如下指令运行，否则worker不工作
-# celery -A celery_tasks.main worker -l info -P eventlet  -c 10
+# celery -A celery_tasks.main worker -l info -P eventlet  -c 10启动 Celery Worker 进程

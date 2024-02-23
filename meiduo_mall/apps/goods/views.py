@@ -8,6 +8,12 @@ from apps.goods.models import GoodsCategory,SKU
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from haystack.views import SearchView
+import time
+import os
+from django.template import loader
+from meiduo_mall import settings
+from apscheduler.schedulers.background import BackgroundScheduler
+from django_apscheduler.jobstores import DjangoJobStore, register_events, register_job
 #
 # # MinIO 服务的基本连接信息
 # minio_client = Minio(
@@ -148,3 +154,41 @@ class DetailView(View):
             'specs':goods_specs,
         }
         return render(request,'detail.html',context)
+
+#开启定时工作
+try:
+    # 实例化调度器
+    scheduler = BackgroundScheduler()
+    # 调度器使用DjangoJobStore()
+    scheduler.add_jobstore(DjangoJobStore(), "default")
+    # 设置定时任务，选择方式为interval，时间间隔为10s
+    # 另一种方式为每天固定时间执行任务，对应代码为：
+    # @register_job(scheduler, 'cron', day_of_week='mon-fri', hour='9', minute='30', second='10',id='task_time')
+    @register_job(scheduler,"interval", seconds=60*60*24,replace_existing=True)
+    def generic_meiduo_index():
+        print('-----------%s-----------' % time.ctime())
+        # 1.商品分类数据
+        categories = get_categories()
+        # 2.广告数据
+        contents = {}
+        content_categories = ContentCategory.objects.all()
+        for cat in content_categories:
+            contents[cat.key] = cat.content_set.filter(status=True).order_by('sequence')
+            context = {
+                'categories': categories,
+                'contents': contents,
+            }
+        # 1.加载渲染时的模板
+        index_template = loader.get_template('index.html')
+        # 2.把数据给模板
+        index_html_data = index_template.render(context)
+        # base_dir的上一级
+        file_path = os.path.join(os.path.dirname(settings.BASE_DIR), 'front_end_pc/index.html')
+        with open(file_path, 'w', encoding='utf8') as f:
+            f.write(index_html_data)
+    register_events(scheduler)
+    scheduler.start()
+except Exception as e:
+    print(e)
+    # 有错误就停止定时器
+    scheduler.shutdown()

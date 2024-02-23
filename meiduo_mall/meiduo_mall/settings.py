@@ -47,6 +47,9 @@ INSTALLED_APPS = [
     'corsheaders',
     #HAYSTACK,对接elasticsearch
     'haystack',
+    #django-crontab实现定时任务
+    # 'django_crontab',
+    'django_apscheduler',
 ]
 
 MIDDLEWARE = [
@@ -257,3 +260,20 @@ HAYSTACK_CONNECTIONS = {
 }
 # 设置搜索每页返回的记录条数
 HAYSTACK_SEARCH_RESULTS_PER_PAGE=5
+
+###################定时任务##################
+"""
+元素的第一个参数是
+分 时 日 月 周 命令
+M:分钟
+H:小时
+D:天
+m:月
+d:日
+元素的第二个任务是 定时任务(函数)
+"""
+#添加定时任务后,要执行python manage.py crontab add
+###!!!!只能在linux下使用,windows要使用django-apscheduler
+# CRONJOBS = [
+#     ('*/1 * * * *','apps.contents.crons.generic_meiduo_index','>>E:/meiduo_mall/meiduo_mall/logs/crontab.log')
+# ]
